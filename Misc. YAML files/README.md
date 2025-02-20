@@ -1,7 +1,7 @@
 # YAML Collection.
 
 ## ESP32C3 - OLED 0.42:
-Important to know the display is 72x40, ESPHome at pressent time (2025 Feb." does not have a 72x40 so use the 128x64 and offset with 28)
+Important to know the display is 72x40, ESPHome at pressent time (2025 Feb." does not have a 72x40 so use the 128x64 and offset with 28)[Display Docs.](https://esphome.io/components/display/)
 
 ![ESP32-C3 OLED](../images/esp32c3-oled.png)![](../images/esp32c3-oled-local-IP_300x400.jpg
 )
@@ -11,14 +11,14 @@ Important to know the display is 72x40, ESPHome at pressent time (2025 Feb." doe
 [YAML Test File](small-display-test.yaml)
 
 ## OLED 0.96
-Larger display easer to workwith
+Larger display easer to workwith.. [Display Docs.](https://esphome.io/components/display/)
 
 ![0.96 OLED](../images/esp32-c3%20-%20oled%200.9_300x400.jpg)
 
 [YAML Test File](./esphome-0.94%20SSD1303%20Display.yaml)
 
 ## Led strip 
-Led strips - I normally use WLED, it is really flexable and has allot of extra functionality, but if you have to use the ESP32 for more that LED Strips, EXPHome offers alot od functionality that can be added on a ESP32 that is used for sensors or Display driver. 
+Led strips - I normally use WLED, it is really flexable and has allot of extra functionality, but if you have to use the ESP32 for more that LED Strips, EXPHome offers alot od functionality that can be added on a ESP32 that is used for sensors or Display driver. [esp32_rmt_led_strip Docs](https://esphome.io/components/light/esp32_rmt_led_strip)
 
 ![alt text](<../images/Breadboard-light strip.png>)
 
