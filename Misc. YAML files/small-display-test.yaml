@@ -1,0 +1,85 @@
+esphome:
+  name: small-display-test
+  friendly_name: Small display test
+
+esp32:
+  board: esp32-c3-devkitm-1
+  framework:
+    type: arduino
+
+# Enable Home Assistant API
+api:
+  encryption:
+    key: "BE+/uxeBBdnl/JhPqO6SL/BkJuQLPQUK2bx5ip+3vRU="
+
+ota:
+  - platform: esphome
+    password: "55bd4f89be61ecd68bc9b331436117be"
+
+wifi:
+  ssid: !secret wifi_ssid
+  password: !secret wifi_password
+
+  # Enable fallback hotspot (captive portal) in case wifi connection fails
+  ap:
+    ssid: "Small-Display-Test"
+    password: "DFVAgnL16mQE"
+
+text_sensor:
+  - platform: template
+    name: "TCP/IP Address"
+    lambda: 'return {WiFi.localIP().toString().c_str()};'
+    id: tcp_ip_address
+
+font:
+  - file: "gfonts://Roboto"
+    id: title
+    size: 12
+  - file: "gfonts://Roboto"
+    id: ip_font
+    size: 9
+
+image:
+  - file: mdi:white-balance-sunny
+    id: icon_weather
+    resize: 15x15
+    type: BINARY
+  - file: mdi:home-thermometer
+    id: icon_temperature
+    resize: 15x15
+    type: BINARY
+  - file: mdi:water-percent
+    id: icon_humidity
+    resize: 15x15
+    type: BINARY
+  - file: mdi:home-automation
+    id: icon_devices
+    resize: 15x15
+    type: BINARY
+
+i2c:
+  sda: GPIO5
+  scl: GPIO6
+  frequency: 400kHz
+
+#Missing model 
+display:
+  - platform: ssd1306_i2c
+    #model: "SH1106 64x48"
+    model: "SH1106 128x64"
+    #model: "SSD1306 72x40"
+    offset_y: 116
+    offset_x: 100
+    address: 0x3C
+    id: oled_display
+    lambda: |-
+      it.line(28, 0, 99, 0);
+      it.line(99, 0, 99, 39);
+      it.line(99, 39, 28, 39);
+      it.line(28, 39, 28, 0);
+      it.print(29,0,id(title), "Local IP:");
+      it.printf(29,15,id(ip_font), "%s", id(tcp_ip_address).state.c_str() );
+      it.image(29,25,id(icon_weather));
+      it.image(45,25,id(icon_temperature));
+      it.image(60,25,id(icon_devices));
+
