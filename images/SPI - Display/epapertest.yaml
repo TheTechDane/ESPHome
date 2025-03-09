@@ -1,0 +1,67 @@
+esphome:
+  name: epapertest
+  friendly_name: ePaperTest
+
+esp32:
+  board: esp32-c3-devkitm-1
+  framework:
+    type: arduino
+
+# Enable logging
+logger:
+
+# Enable Home Assistant API
+api:
+  encryption:
+    key: "9SPzKF9IbSrfXGlYTlJfu/N3AFfxEk2x0zZc2BM1PXE="
+
+ota:
+  - platform: esphome
+    password: "26dbbec6fc965629fa43fb404174a94e"
+
+wifi:
+  ssid: !secret wifi_ssid
+  password: !secret wifi_password
+
+  # Enable fallback hotspot (captive portal) in case wifi connection fails
+  ap:
+    ssid: "Epapertest Fallback Hotspot"
+    password: "JTZA6tAHR9AM"
+
+captive_portal:
+
+time:
+  - platform: homeassistant
+    id: ha_time
+
+font:
+  - file: "gfonts://Roboto"
+    id: title
+    size: 50
+  - file: "gfonts://Kanit"
+    id: txt_font
+    size: 40
+  - file: "gfonts://Kanit"
+    id: time_font
+    size: 60
+
+spi:                                                                                                                                
+  id: bus_a                                                                                                                         
+  mosi_pin: GPIO10 # aka SDA
+  clk_pin: GPIO8 #aka SCL
+
+display:                                                                                                                            
+  - platform: waveshare_epaper                                                                                                      
+    spi_id: bus_a                                                                                                                   
+    model: "2.13in-ttgo-dke"                                                                                                        
+    reset_pin: GPIO4   #D2                                                                                                               
+    cs_pin: GPIO2      #D0                                                                                                             
+    dc_pin: GPIO3      #D1                                                                                                                  
+    busy_pin: GPIO05   #D3                                                                                                                 
+    rotation: 90                                                                                                                    
+    full_update_every: 30
+    update_interval: 5s
+    reset_duration: 2ms
+    lambda: |-
+      it.print(0, 0, id(txt_font), "Hello World!");
+      it.strftime(0, 64, id(time_font), "%H:%M:%S", id(ha_time).now());
