@@ -38,5 +38,16 @@ The LED filement used here is from Ali express and uses 3Volts same as the pin o
 
 [YAML File](<esphome-Single LED.yaml>)
 
+## Lilygo S3 Long
+Firste test of a S3 Long Touch Display - I am working on a ESPHome project as a StreamDeck kind a device.
+
+![Setup](../images/LilygoS3First go.jpg)
+
+[3D Case](https://makerworld.com/en/models/1070855-lilygo-t-deisplay-s3-long-case-w-stand#profileId-1060745)
+
+
+[YAML File](<esphome-Lilygo-S3-Long - New first version fixed.yaml>)
+
+
 
 
