@@ -43,10 +43,15 @@ The LED filement used here is from Ali express and uses 3Volts same as the pin o
 
 ## Lilygo S3 Long
 Firste test of a [Lilygo S3 Long Touch Display](https://lilygo.cc/products/t-display-s3-long?pr_prod_strat=jac&pr_rec_id=decea97a3&pr_rec_pid=7526315688117&pr_ref_pid=8060214935733&pr_seq=uniform) - I am working on a ESPHome project as a StreamDeck kind a device.
+This is the Hello world[YAML](<Misc. YAML files/Lilygo T-Display S3 Long - Hello World.yaml>)
+
+![Setup](<images/Lilygo T-Display S3 Long - Hello World.jpg>)
+
+This is the [3D Case](https://makerworld.com/en/models/1070855-lilygo-t-deisplay-s3-long-case-w-stand#profileId-1060745) I build for it
+
+This is a Updated file from another project: Aguacatec - Some is in spanish but here is a [community post in english](https://community.home-assistant.io/t/lilygo-t-display-s3-long-habbit-desk/839149)
+
 ![Setup](<images/LilygoS3First go.jpg>)
-
-[3D Case](https://makerworld.com/en/models/1070855-lilygo-t-deisplay-s3-long-case-w-stand#profileId-1060745)
-
 
 [YAML File](<Misc. YAML files/esphome-Lilygo-S3-Long - New first version fixed.yaml>)
 

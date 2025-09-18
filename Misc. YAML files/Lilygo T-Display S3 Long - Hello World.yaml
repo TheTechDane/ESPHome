@@ -1,0 +1,278 @@
+#Define Project
+substitutions:
+  #Name and version 
+  name: ttddeck
+  version: "0.0.1"
+  device_description: ${name} - v${version}.
+
+  # Screen setings
+  background_color: '000000'
+  height : 180
+  width : 640
+  y_offset : 4
+  max_x : ${width}-1 
+  min_x : 0    
+  max_y : ${height} + ${y_offset} -1
+  min_y : ${y_offset}
+
+  header_height : 30
+  footer_height : 30
+
+  icons_pr_page : 5
+  nr_pages : 1
+  
+
+  #Links to devices
+  desk_led: light.dimse_lys
+  behind_desk: light.bag_dimse_bord_2
+
+  #Sensors
+  sensor_temperature: weather.forecast_home_hourly_temperature
+  sensor_home_temperature: sensor.kontor_sensor_temperature
+  sensor_home_humidity: sensor.kontor_sensor_humidity
+
+
+globals:
+  - id: inactivity_time
+    type: int
+    restore_value: no
+    initial_value: '0'
+  - id: last_x
+    type: int
+    restore_value: no
+    initial_value: '-1'
+  - id: last_y
+    type: int
+    restore_value: no
+    initial_value: '-1'
+
+esphome:
+  name: "ttddeck"
+  friendly_name: S3 Long
+  name_add_mac_suffix: false
+
+psram:
+  mode: octal
+
+esp32:
+  board: esp32-s3-devkitc-1
+  flash_size: 16MB
+  framework:
+    type: esp-idf
+
+# Enable logging
+logger:
+
+# Enable Home Assistant API
+api:
+
+# Allow Over-The-Air updates
+ota:
+- platform: esphome
+
+wifi:
+  ssid: !secret wifi_ssid
+  password: !secret wifi_password
+  # Set up a wifi access point
+  ap: {}
+
+captive_portal:
+
+font:
+  - file: "gfonts://Roboto"
+    id: title_font
+    size: 70
+  - file: "gfonts://Roboto"
+    id: main_font
+    size: 18
+  - file: "gfonts://Roboto"
+    id: header_font
+    size: ${header_height}
+  - file: "gfonts://Roboto"
+    id: footer_font
+    size: ${footer_height}
+
+image:
+  defaults:
+    resize: 30x30
+    type: BINARY
+    transparency: chroma_key
+
+  #Find MDI icons here https://pictogrammers.com/library/mdi/  
+  images:
+  - file: mdi:white-balance-sunny
+    id: icon_weather
+  - file: mdi:home-thermometer
+    id: icon_temperature
+  - file: mdi:water-percent
+    id: icon_humidity
+  - file: mdi:home-automation
+    id: icon_devices
+  - file: mdi:cog
+    id: icon_settings
+
+color:
+  - id: background_color
+    hex: ${background_color}
+
+  - id: orange
+    hex: 'e9c726'
+  - id: white
+    hex: 'ffffff'
+  - id: dirty_white
+    hex: 'c6c6c6'
+  - id: grey
+    hex: '222222'
+  - id: light_grey
+    hex: '444444'
+  - id: lime
+    hex: 'deff00'
+  - id: crimson
+    hex: 'f3528f'
+  - id: blue
+    hex: '52c0f3'
+  - id: dark_blue
+    hex: '1d85b6'
+  - id: magenta
+    hex: 'a91225'
+  - id: dark_magenta
+    hex: '440109'
+
+# This will fetch time from Home Assistant
+time:
+  - platform: homeassistant
+    id: esptime
+
+# Create sensors from HA you want to use and show
+sensor:
+  - platform: homeassistant
+    id: sensor_temperature
+    entity_id: ${sensor_temperature}
+    internal: true
+  - platform: homeassistant
+    id: sensor_home_temperature
+    entity_id: ${sensor_home_temperature}
+    internal: true
+  - platform: homeassistant
+    id: sensor_home_humidity
+    entity_id: ${sensor_home_humidity}
+    internal: true
+
+#Numbers available in HA
+number:
+  - platform: template
+    name: "Time Out"
+    id: time_out
+    icon: "mdi:timer-sand"
+    optimistic: true
+    min_value: 10
+    max_value: 600
+    step: 10
+    initial_value: 100
+    unit_of_measurement: "s"
+    restore_value: true
+
+interval:
+  - interval: 1s
+    then:
+      - lambda: |-
+          if (id(inactivity_time) < id(time_out).state) {
+              id(inactivity_time) += 1;
+              id(backlight_pwm).turn_on();
+          } else {
+              id(backlight_pwm).turn_off();
+          }
+
+
+spi:
+  - id: display_qspi
+    type: quad
+    clk_pin: 17
+    data_pins:
+      - 13
+      - 18
+      - 21
+      - 14
+
+i2c:
+  sda: 15
+  scl: 10
+  id: touchscreen_bus
+
+touchscreen:
+  - platform: axs15231
+    id: main_touch
+    display: main_display
+    i2c_id: touchscreen_bus
+    transform:
+      mirror_x: true
+      mirror_y: true
+      swap_xy: false
+    calibration:
+      x_min: 0
+      x_max: 640
+      y_min: 0
+      y_max: 180
+    on_touch:
+      - lambda: |-
+          ESP_LOGI("cal", "x=%d, y=%d, x_raw=%d, y_raw=%0d, state=%d",
+            touch.x,
+            touch.y,
+            touch.x_raw,
+            touch.y_raw,
+            touch.state
+          );
+          id(last_x) = touch.x;
+          id(last_y) = touch.y;
+      - lambda: |-
+          id(inactivity_time) = 0;
+
+output:
+  - platform: ledc
+    pin: GPIO1
+    id: backlight_pwm
+
+light:
+  - platform: monochromatic
+    output: backlight_pwm
+    name: Display
+    id: backlight
+    restore_mode: ALWAYS_ON
+    internal: True
+
+display:
+  - platform: mipi_spi
+    id: main_display
+    spi_id: display_qspi
+    model: AXS15231
+    dimensions:
+      height: 640     
+      width: 184     #180
+    cs_pin: 12
+    reset_pin: 16
+    rotation: 90
+    auto_clear_enabled: false
+    pages:
+      - id: home
+        lambda: |-
+          it.fill(id(background_color));
+          
+          //Rectangle around edges
+          //it.line(${min_x}, ${min_y}, ${max_x}, ${min_y});
+          //it.line(${max_x}, ${min_y}, ${max_x}, ${max_y});
+          //it.line(${max_x}, ${max_y}, ${min_x}, ${max_y});
+          //it.line(${min_x}, ${max_y}, ${min_x}, ${min_y});
+
+          it.print(320,${min_y}+${header_height}+5,id(title_font),TextAlign::TOP_CENTER, "Hello World !");
+          it.strftime(320, ${min_y}, id(header_font),TextAlign::TOP_CENTER, "%H:%M", id(esptime).now());
+          it.strftime(320, ${max_y}-${footer_height}, id(footer_font),TextAlign::TOP_CENTER, "%d/%m/%y", id(esptime).now());
+
+          it.printf(320,${min_y}+${header_height}+75,id(header_font),id(blue),TextAlign::TOP_CENTER, "Last press: %d x %d", id(last_x), id(last_y));
+
+
+
+          it.line(${min_x}, ${min_y}+${header_height}, ${max_x}, ${min_y}+${header_height}, Color(0x20, 0x20, 0x20));   //header
+          it.line(${min_x}, ${max_y}-${footer_height}, ${max_x}, ${max_y}-${footer_height}, Color(0x20, 0x20, 0x20));   //footer
+
+          it.image(${max_x}-${footer_height},${min_y},id(icon_settings));
+          it.image(${max_x}-${footer_height},${max_y}-${footer_height},id(icon_devices));
