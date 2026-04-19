@@ -1,0 +1,143 @@
+esphome:
+  name: a1-mini-enclosure
+  friendly_name: A1 mini enclosure
+  
+  #Inital Lightstrip state
+  on_boot:
+    priority: 601
+    then:
+      - light.turn_on:
+          id: led_strip
+          brightness: 70%
+          red: 100%
+          blue: 100%
+          green: 100%                       
+
+# PlatformIO build options
+  platformio_options:
+    build_flags: -DBOARD_HAS_PSRAM
+    board_build.arduino.memory_type: qio_opi
+    board_build.f_flash: 80000000L
+    board_build.flash_mode: qio 
+
+# Configuration for ESP32
+esp32:
+  board: esp32-s3-devkitc-1
+  framework:
+    type: arduino
+
+#  board: seeed_xiao_esp32s3
+#  variant: esp32s3
+#  framework:
+#    type: arduino
+#    version: latest
+#    platform_version: 6.3.2
+
+psram:
+  mode: octal
+  speed: 80MHz
+   
+# Enable logging
+logger:
+
+# Enable Home Assistant API
+api:
+
+ota:
+  - platform: esphome
+    password: "d98bdea6e632370c50d873b0a01fa7ae"
+
+wifi:
+  ssid: !secret wifi_ssid
+  password: !secret wifi_password
+
+  # Enable fallback hotspot (captive portal) in case wifi connection fails
+  ap:
+    ssid: "Esp32-S3-Sense Fallback Hotspot"
+    password: "EEBULFFyKEFv"
+
+captive_portal:
+
+# Configuration for the ESP32 Camera
+esp32_camera:
+  id: espcam
+  name: My Camera
+  external_clock:
+    pin: GPIO10
+    frequency: 20MHz
+  i2c_pins:
+    sda: GPIO40
+    scl: GPIO39
+  data_pins: [GPIO15, GPIO17, GPIO18, GPIO16, GPIO14, GPIO12, GPIO11, GPIO48]
+  vsync_pin: GPIO38
+  href_pin: GPIO47
+  pixel_clock_pin: GPIO13
+  resolution: 1600X1200
+  wb_mode: AUTO
+
+# Configuration for the ESP32 Camera Web Server
+esp32_camera_web_server:
+  - port: 8080
+    mode: stream
+  - port: 8081
+    mode: snapshot
+
+light:
+  - platform: esp32_rmt_led_strip
+    chipset: WS2812
+    rgb_order: GRB
+    pin: GPIO8
+    num_leds: 103
+    id: led_strip
+    name: "LED Strip"
+    # Look at : https://github.com/ljmerza/light-entity-card - For a better Dashboard Control.
+    effects:
+     # Customize parameters
+      - random: 
+      - flicker:
+      - strobe: 
+      - pulse: 
+      - addressable_color_wipe:
+      - addressable_fireworks:
+      #Custom samples  
+      - random:
+          name: "My Fast Random Effect"
+          transition_length: 4s
+          update_interval: 5s
+      - lambda:
+          name: "My Custom Effect"
+          update_interval: 1s
+          lambda: |-
+            static int state = 0;
+            auto call = id(led_strip).turn_on();
+            // Transition of 1000ms = 1s
+            call.set_transition_length(1000);
+            if (state == 0) {
+              call.set_rgb(1.0, 1.0, 1.0);
+            } else if (state == 1) {
+              call.set_rgb(1.0, 0.0, 1.0);
+            } else if (state == 2) {
+              call.set_rgb(0.0, 0.0, 1.0);
+            } else {
+              call.set_rgb(1.0, 0.0, 0.0);
+            }
+            call.perform();
+            state += 1;
+            if (state == 4)
+              state = 0;
+      - addressable_rainbow:
+          name: "Rainbow Effect With Custom Values"
+          speed: 10
+          width: 50
+      - flicker:
+          name: "Flicker Effect With Custom Values"
+          alpha: 95%
+          intensity: 1.5%
+      - addressable_scan:
+          name: "Scan Effect With Custom Values"
+          move_interval: 100ms
+          scan_width: 1
+      - addressable_random_twinkle:
+          name: "Random Twinkle Effect With Custom Values"
+          twinkle_probability: 5%
+          progress_interval: 32ms
